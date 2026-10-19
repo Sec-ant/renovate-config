@@ -3,8 +3,12 @@
   "description": [
     "CI 通过即静默合入默认分支，不建 PR；只有失败的升级才会变成 PR 找到你。",
     "启用前提：test workflow 必须对 `renovate/**` 分支的 push 也跑 CI（`on.push.branches: ['renovate/**']`）。",
-    "Renovate 默认要看到分支上有通过的 check run 才会自动合并；分支上没有 CI 时这里不会静默生效，但也不代表安全——那意味着没有质量闸门，此时应补 CI 而不是改用 `ignoreTests`。"
+    "Renovate 默认要看到分支上有通过的 check run 才会自动合并；分支上没有 CI 时这里不会静默生效，但也不代表安全——那意味着没有质量闸门，此时应补 CI 而不是改用 `ignoreTests`。",
+    "安全修复类 PR 显式排除在自动合并之外：vulnerabilityAlerts 默认 minimumReleaseAge=null，即不等 3 天稳定期，静默合并等于把刚发布的版本直接送进 main。"
   ],
+  "vulnerabilityAlerts": {
+    "automerge": false
+  },
   "packageRules": [
     {
       "description": "devDependencies 的 non-major 升级：CI 绿了就静默合入（devDeps 的破坏会被 CI 抓到，所以不排除 0.x）。",
