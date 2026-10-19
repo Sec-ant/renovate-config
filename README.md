@@ -1,23 +1,36 @@
 # renovate-config
 
-Sec-ant 的共享 Renovate preset。仓库里的 `renovate.json` 只需 `extends`，降噪策略集中在这里改。
+Shared Renovate presets. Extend them from a repository's `renovate.json` instead of repeating the same config everywhere.
 
-## Presets
+```json
+{
+  "extends": [
+    "config:best-practices",
+    "github><account>/renovate-config",
+    "github><account>/renovate-config:silent-automerge"
+  ]
+}
+```
 
-| 引用 | 作用 |
-| --- | --- |
-| `github>Sec-ant/renovate-config` | `default.json`：统一 `timezone` + 每周一 9 点前跑；关掉 `prIgnoreNotification` 评论 |
-| `github>Sec-ant/renovate-config:silent-automerge` | `silent-automerge.json`：CI 绿的 non-major 升级静默合入默认分支，不建 PR；安全修复类排除在外 |
+Substitute the account that hosts this repo. Files are fetched from the default branch on every run, so a change here applies to every extending repository at once.
 
-## 已启用仓库
+## `default.json`
 
-- 两个 preset 都用（有分支 CI 作为闸门）：`zxing-wasm`、`readable-stream`、`barcode-detector`、`lezer-mdast-markdown`、`ecma-re`、`lezer-python-regex`、`lezer-template-plaintext`
-- 只用 `default.json`（没有测试 CI，不能开自动合并）：`gm-fetch`、`zxing-wasm-demo`
+Referenced as `github><account>/renovate-config`.
 
-## silent-automerge 的生效前提
+- Dependency updates are evaluated once a week, before 09:00 `Asia/Shanghai`.
+- The "closed pull request ignored" comment is suppressed.
 
-Renovate 只有在**分支上能看到通过的 check run** 时才会自动合并。所以这些仓库的 `test.yml` 必须同时对
-`renovate/**` 的 push 跑：
+## `silent-automerge.json`
+
+Referenced as `github><account>/renovate-config:silent-automerge`.
+
+Passing dependency updates are committed straight to the default branch, with no pull request, for:
+
+- non-major `devDependencies`
+- non-major, non-`0.x` `dependencies`
+
+Automerge waits for passing check runs on the update branch, so a workflow that tests those dependencies also triggers on `push` to `renovate/**`:
 
 ```yaml
 on:
@@ -26,18 +39,9 @@ on:
     branches: ['renovate/**']
 ```
 
-缺这段时静默合并只是不生效（不会瞎合）。反过来，如果给没有测试的仓库打开
-`silent-automerge`，要么不生效，要么需要 `ignoreTests: true` 才能生效 —— 后者等于放弃质量闸门，不要这么干。
+Everything outside that scope — majors, `0.x` production dependencies, GitHub Actions, security fixes — keeps the usual pull-request flow.
 
-## 有意留在 PR 模式的升级
-
-- major
-- 0.x 的生产依赖
-- GitHub Actions（`depType` 不是 `dependencies`/`devDependencies`，且 action digest/版本变更属于要人看的一类）
-- 安全修复类 PR（`vulnerabilityAlerts` 显式 `automerge: false`）
-- CI 跑失败或长期 pending 的分支（25 小时后开 PR 找你）
-
-## 校验
+## Validating changes
 
 ```sh
 npx -p renovate@latest renovate-config-validator --no-global --strict default.json silent-automerge.json
