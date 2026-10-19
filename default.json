@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Sec-ant 共享降噪 preset（基础层）：统一调度时段 + 关掉无信息量的机器人评论。",
+    "静默自动合并的规则在 `silent-automerge.json`，只有配了分支 CI 的仓库才应该 extend 它。"
+  ],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["before 9am on monday"],
+  "suppressNotifications": ["prIgnoreNotification"]
+}

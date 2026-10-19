@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "CI 通过即静默合入默认分支，不建 PR；只有失败的升级才会变成 PR 找到你。",
+    "启用前提：test workflow 必须对 `renovate/**` 分支的 push 也跑 CI（`on.push.branches: ['renovate/**']`）。",
+    "Renovate 默认要看到分支上有通过的 check run 才会自动合并；分支上没有 CI 时这里不会静默生效，但也不代表安全——那意味着没有质量闸门，此时应补 CI 而不是改用 `ignoreTests`。"
+  ],
+  "packageRules": [
+    {
+      "description": "devDependencies 的 non-major 升级：CI 绿了就静默合入（devDeps 的破坏会被 CI 抓到，所以不排除 0.x）。",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "description": "生产依赖的 non-major 且非 0.x 升级：CI 绿了就静默合入。0.x 生产依赖按 SemVer 随时可能破坏且 CI 未必能反映，仍走 PR。",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "automergeType": "branch"
+    }
+  ]
+}
